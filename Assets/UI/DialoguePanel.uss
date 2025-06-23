@@ -1,0 +1,58 @@
+#root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.dialogue-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 140px;
+    background-color: rgb(163, 174, 165);
+    padding-top: 8px;
+    padding-right: 8px;
+    padding-bottom: 8px;
+    padding-left: 8px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.content {
+    font-size: 12px;
+    color: #ffffff;
+
+    /* 1. 允许横向收缩：长文本不会撑破容器 */
+    flex: 1 1 auto;
+    /* 2. 必须加，否则 flex item 默认 min-width:auto 会撑破父容器 */
+    min-width: 0;
+
+    /* 原来的换行设置 */
+    white-space: normal;
+}
+
+.info-container {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 8px;
+    padding-right: 8px;
+    padding-bottom: 8px;
+    padding-left: 8px;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+}
+
+.name {
+    margin-top: 4px;
+    color: rgb(255, 255, 255);
+    -unity-text-align: upper-center;
+}

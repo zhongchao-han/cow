@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/DialoguePanel.uss?fileID=7433441132597879392&amp;guid=1661f37a2ee805344adf0d6a8dd40665&amp;type=3#DialoguePanel" />
+    <ui:VisualElement name="root" class="root-container">
+        <ui:VisualElement name="dialogue-panel" class="dialogue-panel">
+            <ui:Label name="contentLabel" class="content" text="XXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTakeXXXTake" />
+            <ui:VisualElement name="info-container" class="info-container">
+                <ui:Image name="avatar" class="avatar" />
+                <ui:Label name="nameLabel" class="name" text="XXXName" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

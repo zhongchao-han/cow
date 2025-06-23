@@ -1,0 +1,46 @@
+﻿[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+UserSettings/
+
+MemoryCaptures/
+*.log
+*.pidb
+*.booproj
+*.svd
+
+.vscode/
+.vs/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.csproj.user
+*.sln.docstates
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# ========== 操作系统 ==========
+# macOS
+.DS_Store
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+# Linux swap
+*~
+
+# ========== 可选：构建产物 ==========
+# Android
+*.apk
+*.aab
+# iOS Xcode
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+*.xcodeproj/
+build/
