@@ -25,7 +25,7 @@ public class PlayerMovementController : MonoBehaviour
 
     public float moveSpeed = 3f;    // 移动速度
 
-    // 关键变化：用格子坐标队列存路径
+    // 用格子坐标队列存路径
     private Queue<Vector3Int> cellPathPoints = new Queue<Vector3Int>();
     private bool moving = false;
 
@@ -51,6 +51,13 @@ public class PlayerMovementController : MonoBehaviour
             Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mouseWorldPos.z = 0;
             Vector3Int gridGoal = tilemap.WorldToCell(mouseWorldPos);
+
+            // 目标格子如果不可走，直接return，防止死锁卡死
+            if (!IsCellWalkable(gridGoal))
+            {
+                Debug.Log("目标为障碍或不可行走，忽略本次寻路");
+                return;
+            }
 
             // 角色脚底所在的格子
             Vector3Int gridStart = tilemap.WorldToCell(GetFootPosition());
@@ -102,7 +109,7 @@ public class PlayerMovementController : MonoBehaviour
         return cellCenter - new Vector3(0, tileHeight / 2f, 0);
     }
 
-    // ====== 关键 A* 算法部分（返回格子坐标序列） ======
+    // ====== A* 算法（返回格子坐标序列，带最大步数保护） ======
     List<Vector3Int> FindPathAStar(Vector3Int startCell, Vector3Int goalCell)
     {
         HashSet<Vector3Int> closed = new HashSet<Vector3Int>();
@@ -116,8 +123,18 @@ public class PlayerMovementController : MonoBehaviour
             Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
         };
 
+        int maxSteps = 5000; // 防死锁，地图大可再调高
+        int steps = 0;
+
         while (open.Count > 0)
         {
+            steps++;
+            if (steps > maxSteps)
+            {
+                Debug.LogWarning("A*步骤超限，疑似死循环/障碍包围，寻路中断！");
+                return null;
+            }
+
             Vector3Int curr = open.Dequeue();
             if (curr == goalCell)
                 return ReconstructPath(cameFrom, curr);
