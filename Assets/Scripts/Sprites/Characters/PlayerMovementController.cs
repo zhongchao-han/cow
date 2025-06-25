@@ -20,12 +20,13 @@ public class PlayerMovementController : MonoBehaviour
     [Header("Sprite World Size (Units)")]
     [SerializeField] private Vector2 spriteWorldSize = new Vector2(1f, 2f);
 
-    public Tilemap tilemap;         // Inspector 拖你的 Tilemap
-    public Tilemap obstacleTilemap; // 如果有障碍物独立 Tilemap，可拖这里，没有可与上面同用
+    public Tilemap tilemap;         // 主Tilemap
+    public Tilemap obstacleTilemap; // 障碍物Tilemap，可为空
 
     public float moveSpeed = 3f;    // 移动速度
 
-    private Queue<Vector3> pathPoints = new Queue<Vector3>();
+    // 关键变化：用格子坐标队列存路径
+    private Queue<Vector3Int> cellPathPoints = new Queue<Vector3Int>();
     private bool moving = false;
 
     private Rigidbody2D rb;
@@ -44,33 +45,40 @@ public class PlayerMovementController : MonoBehaviour
 
     void Update()
     {
-        // 鼠标左键点击格子，计算A*路径
+        // 鼠标左键点击格子，A*寻路
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mouseWorldPos.z = 0;
-            Vector3Int gridStart = tilemap.WorldToCell(transform.position);
             Vector3Int gridGoal = tilemap.WorldToCell(mouseWorldPos);
 
-            List<Vector3> path = FindPathAStar(gridStart, gridGoal);
+            // 角色脚底所在的格子
+            Vector3Int gridStart = tilemap.WorldToCell(GetFootPosition());
+
+            List<Vector3Int> path = FindPathAStar(gridStart, gridGoal);
             if (path != null && path.Count > 0)
             {
-                pathPoints = new Queue<Vector3>(path);
+                cellPathPoints = new Queue<Vector3Int>(path);
                 moving = true;
             }
         }
 
-        // 自动沿路径点移动
-        if (moving && pathPoints.Count > 0)
+        // 沿路径自动移动（每一步都对齐格子底部中心）
+        if (moving && cellPathPoints.Count > 0)
         {
-            Vector3 target = pathPoints.Peek();
-            Vector2 dir = (target - transform.position).normalized;
+            Vector3Int gridTarget = cellPathPoints.Peek();
+            Vector3 footTarget = GetCellBottomCenter(gridTarget);
+
+            Vector2 dir = (footTarget - transform.position).normalized;
             SetDirectionByVector(dir);
 
-            transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, footTarget, moveSpeed * Time.deltaTime);
 
-            if (Vector3.Distance(transform.position, target) < 0.05f)
-                pathPoints.Dequeue();
+            if (Vector3.Distance(transform.position, footTarget) < 0.05f)
+            {
+                transform.position = footTarget; // 吸附，避免误差
+                cellPathPoints.Dequeue();
+            }
         }
         else
         {
@@ -80,8 +88,22 @@ public class PlayerMovementController : MonoBehaviour
         AnimateWalk();
     }
 
-    // ====== 关键 A* 算法部分 ======
-    List<Vector3> FindPathAStar(Vector3Int startCell, Vector3Int goalCell)
+    // 获取角色“脚底”世界坐标（假设Sprite Pivot在底部）
+    private Vector3 GetFootPosition()
+    {
+        return transform.position;
+    }
+
+    // 获取格子的底边中心世界坐标
+    private Vector3 GetCellBottomCenter(Vector3Int cell)
+    {
+        Vector3 cellCenter = tilemap.GetCellCenterWorld(cell);
+        float tileHeight = tilemap.cellSize.y;
+        return cellCenter - new Vector3(0, tileHeight / 2f, 0);
+    }
+
+    // ====== 关键 A* 算法部分（返回格子坐标序列） ======
+    List<Vector3Int> FindPathAStar(Vector3Int startCell, Vector3Int goalCell)
     {
         HashSet<Vector3Int> closed = new HashSet<Vector3Int>();
         Dictionary<Vector3Int, Vector3Int> cameFrom = new Dictionary<Vector3Int, Vector3Int>();
@@ -122,31 +144,31 @@ public class PlayerMovementController : MonoBehaviour
 
     float Heuristic(Vector3Int a, Vector3Int b)
     {
-        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y); // 曼哈顿距离
+        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
     }
 
     bool IsCellWalkable(Vector3Int cell)
     {
-        // 如果 obstacleTilemap 有障碍Tile，返回 false；否则只判断 tilemap
         if (obstacleTilemap != null && obstacleTilemap.HasTile(cell))
             return false;
-        // 也可根据 tilemap 上是否有Tile来判断是否可走
-        return !tilemap.HasTile(cell) || (tilemap.HasTile(cell) && (obstacleTilemap==null || !obstacleTilemap.HasTile(cell)));
+        // 可选：判断地表 tilemap 必须有 tile 才能走
+        // return tilemap.HasTile(cell);
+        return !tilemap.HasTile(cell) || (tilemap.HasTile(cell) && (obstacleTilemap == null || !obstacleTilemap.HasTile(cell)));
     }
 
-    List<Vector3> ReconstructPath(Dictionary<Vector3Int, Vector3Int> cameFrom, Vector3Int curr)
+    List<Vector3Int> ReconstructPath(Dictionary<Vector3Int, Vector3Int> cameFrom, Vector3Int curr)
     {
-        List<Vector3> totalPath = new List<Vector3>();
-        totalPath.Add(tilemap.GetCellCenterWorld(curr));
+        List<Vector3Int> totalPath = new List<Vector3Int>();
+        totalPath.Add(curr);
         while (cameFrom.ContainsKey(curr))
         {
             curr = cameFrom[curr];
-            totalPath.Insert(0, tilemap.GetCellCenterWorld(curr));
+            totalPath.Insert(0, curr);
         }
         return totalPath;
     }
 
-    // 简易优先队列
+    // ===== 简易优先队列 =====
     public class PriorityQueue<T>
     {
         List<KeyValuePair<T, float>> data = new List<KeyValuePair<T, float>>();
@@ -173,7 +195,7 @@ public class PlayerMovementController : MonoBehaviour
         }
     }
 
-    // 方向自动判断（根据移动向量设置动画朝向）
+    // 动画与朝向
     void SetDirectionByVector(Vector2 dir)
     {
         if (dir == Vector2.zero) return;
@@ -210,9 +232,9 @@ public class PlayerMovementController : MonoBehaviour
     {
         switch (currentDirection)
         {
-            case Direction.Up:    return upSprites;
-            case Direction.Down:  return downSprites;
-            case Direction.Left:  return leftSprites;
+            case Direction.Up: return upSprites;
+            case Direction.Down: return downSprites;
+            case Direction.Left: return leftSprites;
             case Direction.Right: return rightSprites;
         }
         return downSprites;
