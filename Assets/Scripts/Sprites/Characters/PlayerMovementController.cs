@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer))]
 public class PlayerMovementController : MonoBehaviour
@@ -8,25 +9,27 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private float walkSpeed = 2f;
 
     [Header("Animation Frames (Up/Down: 2 frames; Left/Right: 3 frames)")]
-    [Tooltip("Use the '+' button to add exactly 2 sprites for Up direction.")]
     [SerializeField] private List<Sprite> upSprites = new List<Sprite>(2);
-    [Tooltip("Use the '+' button to add exactly 2 sprites for Down direction.")]
     [SerializeField] private List<Sprite> downSprites = new List<Sprite>(2);
-    [Tooltip("Use the '+' button to add exactly 3 sprites for Left direction.")]
     [SerializeField] private List<Sprite> leftSprites = new List<Sprite>(3);
-    [Tooltip("Use the '+' button to add exactly 3 sprites for Right direction.")]
     [SerializeField] private List<Sprite> rightSprites = new List<Sprite>(3);
 
     [Header("Frame Timing")]
     [SerializeField] private float frameDuration = 0.2f;
 
     [Header("Sprite World Size (Units)")]
-    [Tooltip("Desired width and height of the sprite in world units")]    
     [SerializeField] private Vector2 spriteWorldSize = new Vector2(1f, 2f);
+
+    public Tilemap tilemap;         // Inspector 拖你的 Tilemap
+    public Tilemap obstacleTilemap; // 如果有障碍物独立 Tilemap，可拖这里，没有可与上面同用
+
+    public float moveSpeed = 3f;    // 移动速度
+
+    private Queue<Vector3> pathPoints = new Queue<Vector3>();
+    private bool moving = false;
 
     private Rigidbody2D rb;
     private SpriteRenderer sr;
-    private Vector2 movement;
     private float frameTimer;
     private int frameIndex;
     private enum Direction { Up, Down, Left, Right }
@@ -41,30 +44,143 @@ public class PlayerMovementController : MonoBehaviour
 
     void Update()
     {
-        Vector2 input = Vector2.zero;
-        if (Input.GetKey(KeyCode.A)) input.x = -1;
-        else if (Input.GetKey(KeyCode.D)) input.x = 1;
-
-        if (input.x == 0)
+        // 鼠标左键点击格子，计算A*路径
+        if (Input.GetMouseButtonDown(0))
         {
-            if (Input.GetKey(KeyCode.W)) input.y = 1;
-            else if (Input.GetKey(KeyCode.S)) input.y = -1;
+            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mouseWorldPos.z = 0;
+            Vector3Int gridStart = tilemap.WorldToCell(transform.position);
+            Vector3Int gridGoal = tilemap.WorldToCell(mouseWorldPos);
+
+            List<Vector3> path = FindPathAStar(gridStart, gridGoal);
+            if (path != null && path.Count > 0)
+            {
+                pathPoints = new Queue<Vector3>(path);
+                moving = true;
+            }
         }
 
-        movement = input;
+        // 自动沿路径点移动
+        if (moving && pathPoints.Count > 0)
+        {
+            Vector3 target = pathPoints.Peek();
+            Vector2 dir = (target - transform.position).normalized;
+            SetDirectionByVector(dir);
 
-        if (movement.x > 0) currentDirection = Direction.Right;
-        else if (movement.x < 0) currentDirection = Direction.Left;
-        else if (movement.y > 0) currentDirection = Direction.Up;
-        else if (movement.y < 0) currentDirection = Direction.Down;
+            transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
+
+            if (Vector3.Distance(transform.position, target) < 0.05f)
+                pathPoints.Dequeue();
+        }
+        else
+        {
+            moving = false;
+        }
 
         AnimateWalk();
     }
 
-    void FixedUpdate()
+    // ====== 关键 A* 算法部分 ======
+    List<Vector3> FindPathAStar(Vector3Int startCell, Vector3Int goalCell)
     {
-        Vector2 newPosition = rb.position + movement * walkSpeed * Time.fixedDeltaTime;
-        rb.MovePosition(newPosition);
+        HashSet<Vector3Int> closed = new HashSet<Vector3Int>();
+        Dictionary<Vector3Int, Vector3Int> cameFrom = new Dictionary<Vector3Int, Vector3Int>();
+        Dictionary<Vector3Int, float> gScore = new Dictionary<Vector3Int, float>();
+        PriorityQueue<Vector3Int> open = new PriorityQueue<Vector3Int>();
+        gScore[startCell] = 0;
+        open.Enqueue(startCell, 0);
+
+        Vector2Int[] dirs = new Vector2Int[] {
+            Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
+        };
+
+        while (open.Count > 0)
+        {
+            Vector3Int curr = open.Dequeue();
+            if (curr == goalCell)
+                return ReconstructPath(cameFrom, curr);
+
+            closed.Add(curr);
+            foreach (var dir in dirs)
+            {
+                Vector3Int neighbor = curr + new Vector3Int(dir.x, dir.y, 0);
+                if (closed.Contains(neighbor) || !IsCellWalkable(neighbor))
+                    continue;
+
+                float tentativeG = gScore[curr] + 1;
+                if (!gScore.ContainsKey(neighbor) || tentativeG < gScore[neighbor])
+                {
+                    cameFrom[neighbor] = curr;
+                    gScore[neighbor] = tentativeG;
+                    float f = tentativeG + Heuristic(neighbor, goalCell);
+                    open.Enqueue(neighbor, f);
+                }
+            }
+        }
+        return null;
+    }
+
+    float Heuristic(Vector3Int a, Vector3Int b)
+    {
+        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y); // 曼哈顿距离
+    }
+
+    bool IsCellWalkable(Vector3Int cell)
+    {
+        // 如果 obstacleTilemap 有障碍Tile，返回 false；否则只判断 tilemap
+        if (obstacleTilemap != null && obstacleTilemap.HasTile(cell))
+            return false;
+        // 也可根据 tilemap 上是否有Tile来判断是否可走
+        return !tilemap.HasTile(cell) || (tilemap.HasTile(cell) && (obstacleTilemap==null || !obstacleTilemap.HasTile(cell)));
+    }
+
+    List<Vector3> ReconstructPath(Dictionary<Vector3Int, Vector3Int> cameFrom, Vector3Int curr)
+    {
+        List<Vector3> totalPath = new List<Vector3>();
+        totalPath.Add(tilemap.GetCellCenterWorld(curr));
+        while (cameFrom.ContainsKey(curr))
+        {
+            curr = cameFrom[curr];
+            totalPath.Insert(0, tilemap.GetCellCenterWorld(curr));
+        }
+        return totalPath;
+    }
+
+    // 简易优先队列
+    public class PriorityQueue<T>
+    {
+        List<KeyValuePair<T, float>> data = new List<KeyValuePair<T, float>>();
+        public int Count { get { return data.Count; } }
+        public void Enqueue(T item, float priority)
+        {
+            data.Add(new KeyValuePair<T, float>(item, priority));
+        }
+        public T Dequeue()
+        {
+            int bestIndex = 0;
+            float bestPriority = data[0].Value;
+            for (int i = 1; i < data.Count; i++)
+            {
+                if (data[i].Value < bestPriority)
+                {
+                    bestPriority = data[i].Value;
+                    bestIndex = i;
+                }
+            }
+            T bestItem = data[bestIndex].Key;
+            data.RemoveAt(bestIndex);
+            return bestItem;
+        }
+    }
+
+    // 方向自动判断（根据移动向量设置动画朝向）
+    void SetDirectionByVector(Vector2 dir)
+    {
+        if (dir == Vector2.zero) return;
+        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
+            currentDirection = dir.x > 0 ? Direction.Right : Direction.Left;
+        else
+            currentDirection = dir.y > 0 ? Direction.Up : Direction.Down;
     }
 
     private void AnimateWalk()
@@ -73,7 +189,7 @@ public class PlayerMovementController : MonoBehaviour
         if (sprites == null || sprites.Count == 0)
             return;
 
-        if (movement == Vector2.zero)
+        if (!moving)
         {
             frameIndex = 0;
             frameTimer = 0;
@@ -87,7 +203,6 @@ public class PlayerMovementController : MonoBehaviour
             frameTimer = 0;
             frameIndex = (frameIndex + 1) % sprites.Count;
         }
-
         sr.sprite = sprites[frameIndex];
     }
 

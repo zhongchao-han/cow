@@ -171,6 +171,9 @@ MonoBehaviour:
   - {fileID: -733809908, guid: ed5cd114bf208c04c9e0ad10d1ac59d4, type: 3}
   frameDuration: 0.2
   spriteWorldSize: {x: 1, y: 2}
+  tilemap: {fileID: 1298700096}
+  obstacleTilemap: {fileID: 738900101}
+  moveSpeed: 3
 --- !u!61 &431074071
 BoxCollider2D:
   m_ObjectHideFlags: 0
