@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 620
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -113,10 +113,10 @@ TextureImporter:
       name: NPC_01_Stand_0
       rect:
         serializedVersion: 2
-        x: 795
-        y: 395
-        width: 1610
-        height: 5410
+        x: 114
+        y: 190
+        width: 362
+        height: 628
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,8 +124,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e5a90aa474999004fb5b1b09e742d58e
-      internalID: -141282444
+      spriteID: 543b51857bce88b4ba9f0ec5d9596d2d
+      internalID: 1933511052
       vertices: []
       indices: 
       edges: []
@@ -134,10 +134,10 @@ TextureImporter:
       name: NPC_01_Stand_1
       rect:
         serializedVersion: 2
-        x: 3995
-        y: 395
-        width: 1610
-        height: 5410
+        x: 534
+        y: 193
+        width: 374
+        height: 625
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -145,8 +145,29 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ac3f308abc8875e478ec28ea427ca519
-      internalID: -1208674706
+      spriteID: 5ac496e6f72cb06499f91d8ef61ad103
+      internalID: -261753092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NPC_01_Stand_2
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 680
+        width: 4
+        height: 12
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2c876d6ed5d77f44dae8ef53f32cf47b
+      internalID: 187963201
       vertices: []
       indices: 
       edges: []
@@ -162,8 +183,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      NPC_01_Stand_0: -141282444
-      NPC_01_Stand_1: -1208674706
+      NPC_01_Stand_0: 1933511052
+      NPC_01_Stand_1: -261753092
+      NPC_01_Stand_2: 187963201
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

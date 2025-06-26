@@ -32,7 +32,7 @@ public class DialoguePanelController : MonoBehaviour
 
         // 默认隐藏
         root.style.display = DisplayStyle.None;
-        ShowDialogue(null, "sfdsfd", "sdfsdfsdddd");
+        // ShowDialogue(null, "sfdsfd", "sdfsdfsdddd");
     }
 
     /// <summary>

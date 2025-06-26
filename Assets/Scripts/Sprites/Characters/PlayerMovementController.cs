@@ -36,8 +36,11 @@ public class PlayerMovementController : MonoBehaviour
     private enum Direction { Up, Down, Left, Right }
     private Direction currentDirection = Direction.Down;
 
+    public static PlayerMovementController Instance { get; private set; }
+
     void Awake()
     {
+        Instance = this;
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         ResizeSprite();
