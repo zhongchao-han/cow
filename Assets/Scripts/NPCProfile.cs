@@ -1,11 +1,22 @@
+// NPCProfile.cs
+using UnityEngine;
+using System.Collections.Generic;
 
-[System.Serializable]
-public class NPCProfile
+[CreateAssetMenu(fileName = "NPCProfile", menuName = "NPC/NPCProfile")]
+public class NPCProfile : ScriptableObject
 {
     public string npcName;
-    public string backstory;
-    public string[] dailyRoutine; // 每小时/半小时一格，写活动或地点名
-    public string[] hobbies;
-    public string[] greetings; // 不同情景的打招呼内容
-    // 更多字段，比如好感度、亲密度等
+    [TextArea] public string backgroundStory;
+    public List<ScheduleEntry> dailySchedule;
+    public List<string> likes;
+    public List<string> dislikes;
+    public List<string> greetingDialogues;
+}
+
+[System.Serializable]
+public class ScheduleEntry
+{
+    [Range(0, 23)] public int hour;
+    public string locationTag;   // 位置标记（如"Farm", "Home"）
+    public string action;        // 行为描述（如"Farming", "Sleeping"）
 }
