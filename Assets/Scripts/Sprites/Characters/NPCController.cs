@@ -15,6 +15,9 @@ public class NPCController : MonoBehaviour
     private NPCState currentState = NPCState.Idle;
     private int currentScheduleIndex = 0;
     private Transform targetLocation;
+    private bool playerInGreetRange = false;   // 是否已在范围内
+    private string currentGreeting = "";       // 当前这一轮的招呼内容
+
 
     void Start()
     {
@@ -83,27 +86,38 @@ public class NPCController : MonoBehaviour
 
     void CheckPlayerNearby()
     {
-        if (Vector3.Distance(transform.position, player.position) < greetDistance)
+        float dist = Vector3.Distance(transform.position, player.position);
+        if (dist < greetDistance)
         {
-            if (currentState != NPCState.Greeting && CanGreet())
+            if (!playerInGreetRange && CanGreet())
             {
+                // 玩家刚刚进入范围，生成新招呼内容
+                playerInGreetRange = true;
+                currentGreeting = profile.greetingDialogues[Random.Range(0, profile.greetingDialogues.Count)];
                 StartCoroutine(GreetPlayer());
             }
+            // 玩家一直在范围内，不再重复打招呼
+        }
+        else
+        {
+            // 玩家离开范围，重置状态
+            playerInGreetRange = false;
         }
     }
+
 
     IEnumerator GreetPlayer()
     {
         currentState = NPCState.Greeting;
-        // 触发对话UI，调用你自己的对话系统
         dialoguePanel.ShowDialogue(
-            null, // 可以传 Sprite 头像
-            profile.npcName, // 名字
-            profile.greetingDialogues[Random.Range(0, profile.greetingDialogues.Count)] // 随机打招呼内容
+            null,
+            profile.npcName,
+            currentGreeting
         );
         yield return new WaitForSeconds(2f); // 假设2秒对话
         currentState = NPCState.Idle;
     }
+
 
     bool CanGreet()
     {

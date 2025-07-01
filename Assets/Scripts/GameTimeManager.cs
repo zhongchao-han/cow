@@ -35,7 +35,7 @@ public class GameTimeManager : MonoBehaviour
                 Hour = (Hour + 1) % 24;
             }
             timeCounter = 0f;
-            Debug.Log("当前游戏时间：" + Hour.ToString("D2") + ":" + Minute.ToString("D2"));
+            // Debug.Log("当前游戏时间：" + Hour.ToString("D2") + ":" + Minute.ToString("D2"));
         }
     }
 }
