@@ -23,6 +23,7 @@ public class PlayerMovementController : MonoBehaviour
     public Tilemap tilemap;         // 主Tilemap
     public List<Tilemap> obstacleTilemaps; // 在 Inspector 中拖多个 Tilemap
 
+    public CowController cowController;
 
     public float moveSpeed = 3f;    // 移动速度
 
@@ -36,6 +37,7 @@ public class PlayerMovementController : MonoBehaviour
     private int frameIndex;
     private enum Direction { Up, Down, Left, Right }
     private Direction currentDirection = Direction.Down;
+    public bool holdingStick;
 
     public static PlayerMovementController Instance { get; private set; }
 
@@ -95,6 +97,11 @@ public class PlayerMovementController : MonoBehaviour
         {
             moving = false;
         }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            holdingStick = !holdingStick;
+
+        cowController.playerHoldingStick = holdingStick;
 
         AnimateWalk();
     }
@@ -173,10 +180,14 @@ public class PlayerMovementController : MonoBehaviour
         foreach (Tilemap map in obstacleTilemaps)
         {
             if (map != null && map.HasTile(cell))
+            {
+                Debug.DrawLine(tilemap.GetCellCenterWorld(cell), tilemap.GetCellCenterWorld(cell) + Vector3.up * 0.5f, Color.red, 1f);
                 return false;
+            }
         }
         return true;
     }
+
 
 
     List<Vector3Int> ReconstructPath(Dictionary<Vector3Int, Vector3Int> cameFrom, Vector3Int curr)
@@ -274,4 +285,5 @@ public class PlayerMovementController : MonoBehaviour
         );
         transform.localScale = newScale;
     }
+
 }
