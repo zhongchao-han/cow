@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Tilemaps;
 
 public enum NPCState { Idle, Moving, Working, Sleeping, Greeting }
 
@@ -12,6 +13,12 @@ public class NPCController : MonoBehaviour
     public float greetDistance = 1.5f;
     public Transform player;
 
+    public Tilemap npcObstacleTilemap; // 拖入刚创建的 NPCObstacleTilemap
+    public TileBase blockingTile;      // 拖入 BlockingTile
+
+    private Vector3Int lastBlockedCell;
+
+
     private NPCState currentState = NPCState.Idle;
     private int currentScheduleIndex = 0;
     private Transform targetLocation;
@@ -23,6 +30,7 @@ public class NPCController : MonoBehaviour
     {
         if (profile == null) return;
         SetCurrentSchedule();
+        UpdateNPCBlockTile();
     }
 
     void Update()
@@ -30,6 +38,26 @@ public class NPCController : MonoBehaviour
         CheckScheduleChange();
         HandleState();
         CheckPlayerNearby();
+        UpdateNPCBlockTile();
+    }
+
+    private void UpdateNPCBlockTile()
+    {
+        Vector3Int currentCell = npcObstacleTilemap.WorldToCell(GetFootPosition());
+
+        if (currentCell != lastBlockedCell)
+        {
+            if (npcObstacleTilemap.HasTile(lastBlockedCell))
+                npcObstacleTilemap.SetTile(lastBlockedCell, null);
+
+            npcObstacleTilemap.SetTile(currentCell, blockingTile);
+            lastBlockedCell = currentCell;
+        }
+    }
+
+    private Vector3 GetFootPosition()
+    {
+        return transform.position;
     }
 
     void CheckScheduleChange()

@@ -21,7 +21,8 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private Vector2 spriteWorldSize = new Vector2(1f, 2f);
 
     public Tilemap tilemap;         // 主Tilemap
-    public Tilemap obstacleTilemap; // 障碍物Tilemap，可为空
+    public List<Tilemap> obstacleTilemaps; // 在 Inspector 中拖多个 Tilemap
+
 
     public float moveSpeed = 3f;    // 移动速度
 
@@ -169,12 +170,14 @@ public class PlayerMovementController : MonoBehaviour
 
     bool IsCellWalkable(Vector3Int cell)
     {
-        if (obstacleTilemap != null && obstacleTilemap.HasTile(cell))
-            return false;
-        // 可选：判断地表 tilemap 必须有 tile 才能走
-        // return tilemap.HasTile(cell);
-        return !tilemap.HasTile(cell) || (tilemap.HasTile(cell) && (obstacleTilemap == null || !obstacleTilemap.HasTile(cell)));
+        foreach (Tilemap map in obstacleTilemaps)
+        {
+            if (map != null && map.HasTile(cell))
+                return false;
+        }
+        return true;
     }
+
 
     List<Vector3Int> ReconstructPath(Dictionary<Vector3Int, Vector3Int> cameFrom, Vector3Int curr)
     {
