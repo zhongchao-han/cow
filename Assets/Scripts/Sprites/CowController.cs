@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using System.Collections.Generic;
+using System.Collections;
 
 public enum CowState
 {
@@ -25,10 +27,21 @@ public class CowController : MonoBehaviour
     [Header("动画")]
     public Animator animator;
 
+    [Header("作物 tile 阶段")]
+    public TileBase[] cornStages; // 完整 -> 半吃 -> 杆
+    public TileBase[] grassStages; // 高草 -> 矮草 -> 土地
+
+    [Header("视野")]
+    public int sightRange = 5;
+
     private CowState currentState = CowState.Idle;
     private Vector3Int currentTargetCell;
     private Vector3Int lastBlockedCell;
     private float stateTimer = 0f;
+
+    private float idleTimer = 0f;
+    private Vector3Int idleTarget;
+    private bool hasIdleTarget = false;
 
     void Start()
     {
@@ -52,13 +65,13 @@ public class CowController : MonoBehaviour
 
         Vector3Int cowCell = grassTilemap.WorldToCell(transform.position);
 
-        if (FindNearbyTile(cornTilemap, cowCell, out currentTargetCell))
+        if (FindTileInRange(cornTilemap, cornStages, cowCell, out currentTargetCell))
         {
             currentState = CowState.EatingCorn;
             return;
         }
 
-        if (FindNearbyTile(grassTilemap, cowCell, out currentTargetCell))
+        if (FindTileInRange(grassTilemap, grassStages, cowCell, out currentTargetCell))
         {
             currentState = CowState.EatingGrass;
             return;
@@ -98,8 +111,18 @@ public class CowController : MonoBehaviour
 
         if (Vector3.Distance(transform.position, targetPos) < 0.05f)
         {
+            animator?.SetBool("IsWalking", false);
             animator?.SetTrigger("Eat");
-            Debug.Log("牛正在吃东西");
+
+            if (cornTilemap.HasTile(cell))
+            {
+                StartCoroutine(EatTileInStages(cornTilemap, cell, cornStages));
+            }
+            else if (grassTilemap.HasTile(cell))
+            {
+                EatGrassAt(cell);
+            }
+
             stateTimer = Random.Range(2f, 4f);
             currentState = CowState.Idle;
         }
@@ -131,27 +154,116 @@ public class CowController : MonoBehaviour
 
     void WanderRandomly()
     {
-        animator?.SetBool("IsWalking", false);
-    }
+        idleTimer -= Time.deltaTime;
 
-    bool FindNearbyTile(Tilemap map, Vector3Int origin, out Vector3Int foundCell)
-    {
-        Vector2Int[] dirs = new Vector2Int[] {
-            Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
-        };
-
-        foreach (var dir in dirs)
+        if (!hasIdleTarget || Vector3.Distance(transform.position, GetCellBottomCenter(idleTarget)) < 0.1f)
         {
-            Vector3Int neighbor = origin + new Vector3Int(dir.x, dir.y, 0);
-            if (map.HasTile(neighbor))
+            if (Random.value < 0.5f)
             {
-                foundCell = neighbor;
-                return true;
+                idleTarget = GetRandomNearbyCell();
+                hasIdleTarget = true;
+                idleTimer = Random.Range(2f, 4f);
+                animator?.SetBool("IsWalking", true);
+            }
+            else
+            {
+                animator?.SetBool("IsWalking", false);
+                hasIdleTarget = false;
             }
         }
 
-        foundCell = origin;
+        if (hasIdleTarget)
+        {
+            Vector3 targetPos = GetCellBottomCenter(idleTarget);
+            transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * 0.5f * Time.deltaTime);
+
+            if (Vector3.Distance(transform.position, targetPos) < 0.05f)
+            {
+                hasIdleTarget = false;
+                animator?.SetBool("IsWalking", false);
+            }
+        }
+    }
+
+    Vector3Int GetRandomNearbyCell()
+    {
+        Vector3Int current = grassTilemap.WorldToCell(transform.position);
+        List<Vector3Int> candidates = new List<Vector3Int>();
+
+        for (int dx = -2; dx <= 2; dx++)
+        {
+            for (int dy = -2; dy <= 2; dy++)
+            {
+                if (dx == 0 && dy == 0) continue;
+
+                Vector3Int check = current + new Vector3Int(dx, dy, 0);
+                if (IsCellWalkable(check))
+                {
+                    candidates.Add(check);
+                }
+            }
+        }
+
+        if (candidates.Count > 0)
+            return candidates[Random.Range(0, candidates.Count)];
+        else
+            return current;
+    }
+
+    bool IsCellWalkable(Vector3Int cell)
+    {
+        return !obstacleTilemap.HasTile(cell);
+    }
+
+    bool FindTileInRange(Tilemap map, TileBase[] stages, Vector3Int origin, out Vector3Int targetCell)
+    {
+        for (int dx = -sightRange; dx <= sightRange; dx++)
+        {
+            for (int dy = -sightRange; dy <= sightRange; dy++)
+            {
+                Vector3Int offset = new Vector3Int(dx, dy, 0);
+                Vector3Int check = origin + offset;
+
+                TileBase tile = map.GetTile(check);
+                if (tile == stages[0])
+                {
+                    targetCell = check;
+                    return true;
+                }
+            }
+        }
+        targetCell = origin;
         return false;
+    }
+
+    IEnumerator EatTileInStages(Tilemap map, Vector3Int cell, TileBase[] stages)
+    {
+        currentState = CowState.Idle;
+        animator?.SetBool("IsWalking", false);
+        animator?.SetTrigger("Eat");
+
+        for (int i = 1; i < stages.Length; i++)
+        {
+            yield return new WaitForSeconds(0.4f);
+            map.SetTile(cell, stages[i]);
+        }
+    }
+
+    void EatGrassAt(Vector3Int cell)
+    {
+        TileBase current = grassTilemap.GetTile(cell);
+        int index = System.Array.IndexOf(grassStages, current);
+        if (index >= 0 && index < grassStages.Length - 1)
+        {
+            grassTilemap.SetTile(cell, grassStages[index + 1]);
+        }
+    }
+
+    Vector3 GetCellBottomCenter(Vector3Int cell)
+    {
+        Vector3 cellCenter = grassTilemap.GetCellCenterWorld(cell);
+        float tileHeight = grassTilemap.cellSize.y;
+        return cellCenter - new Vector3(0, tileHeight / 2f, 0);
     }
 
     void UpdateObstacleTile()

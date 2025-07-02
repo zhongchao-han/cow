@@ -1488,6 +1488,17 @@ MonoBehaviour:
   player: {fileID: 431074074}
   playerHoldingStick: 0
   animator: {fileID: 929064233}
+  cornStages:
+  - {fileID: 11400000, guid: 70520aed5f112064d9a7b65ecaa1fd0f, type: 2}
+  - {fileID: 11400000, guid: d91eca0be8efff74ab1f0815bc8c49c8, type: 2}
+  - {fileID: 11400000, guid: 94a7d537f7ac5e1439a169432552b102, type: 2}
+  - {fileID: 11400000, guid: 41f1c6680ba37324f8aabb6151f36e70, type: 2}
+  grassStages:
+  - {fileID: 11400000, guid: 49d5152ca3f20c640b5b9057e7003549, type: 2}
+  - {fileID: 11400000, guid: b5b04c27920e16b488b4b87d6db16cfe, type: 2}
+  - {fileID: 11400000, guid: a0f5135a7dc0e024dacb16c85976d96a, type: 2}
+  - {fileID: 11400000, guid: d1bfbd7fdc3b3824d8995a4801cd33d3, type: 2}
+  sightRange: 5
 --- !u!95 &929064233
 Animator:
   serializedVersion: 5
