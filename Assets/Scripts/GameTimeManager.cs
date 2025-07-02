@@ -25,7 +25,7 @@ public class GameTimeManager : MonoBehaviour
 
     void Update()
     {
-        timeCounter += Time.deltaTime;
+        timeCounter += Time.deltaTime; 
         if (timeCounter > minuteLength)
         {
             Minute++;
