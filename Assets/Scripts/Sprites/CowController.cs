@@ -16,14 +16,22 @@ public class CowController : MonoBehaviour
     public Animator animator;
 
     private Vector3Int lastBlockedCell;
+    private Vector3Int escapeTargetCell;
+    private bool isEscaping = false;
 
     void Update()
     {
         UpdateObstacleTile();
 
-        if (Vector3.Distance(player.position, transform.position) < 2.5f && playerHoldingStick)
+        // 玩家靠近且拿棍子，开始逃跑
+        if (!isEscaping && Vector3.Distance(player.position, transform.position) < 2.5f && playerHoldingStick)
         {
-            EscapeFromPlayer();
+            StartEscapeFromPlayer();
+        }
+
+        if (isEscaping)
+        {
+            MoveToEscapeTarget();
         }
         else
         {
@@ -31,23 +39,58 @@ public class CowController : MonoBehaviour
         }
     }
 
-    void EscapeFromPlayer()
+    void StartEscapeFromPlayer()
     {
-        // 投影到 2D 平面，避免 z 坐标干扰
-        Vector2 delta = transform.position - player.position;
-        Vector3 dir;
+        Vector3 dir = (transform.position - player.position);
 
-        if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
-            dir = new Vector3(Mathf.Sign(delta.x), 0, 0); // 左右
+        // 只允许上下左右方向
+        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
+            dir = new Vector3(Mathf.Sign(dir.x), 0, 0);
         else
-            dir = new Vector3(0, Mathf.Sign(delta.y), 0); // 上下
+            dir = new Vector3(0, Mathf.Sign(dir.y), 0);
+
+        // 当前 tile 为尾部 tile
+        Vector3Int tailCell = obstacleTilemap.WorldToCell(transform.position);
+        Vector3Int offset = new Vector3Int((int)dir.x, (int)dir.y, 0);
+
+        int escapeDistance = 4;
+        escapeTargetCell = tailCell + offset * escapeDistance;
+
+        isEscaping = true;
 
         UpdateAnimatorDirection(dir);
-
-        transform.position += dir * moveSpeed * 2f * Time.deltaTime;
         animator?.SetBool("IsWalking", true);
     }
 
+    void MoveToEscapeTarget()
+    {
+        Vector3Int tailCell = escapeTargetCell;
+
+        Vector3Int headCell;
+        if (transform.localScale.x > transform.localScale.y)
+        {
+            // 横向头部
+            headCell = tailCell + new Vector3Int((int)Mathf.Sign(transform.localScale.x), 0, 0);
+        }
+        else
+        {
+            // 纵向头部
+            headCell = tailCell + new Vector3Int(0, (int)Mathf.Sign(transform.localScale.y), 0);
+        }
+
+        Vector3 headWorld = obstacleTilemap.GetCellCenterWorld(headCell);
+        Vector3 tailWorld = obstacleTilemap.GetCellCenterWorld(tailCell);
+        Vector3 targetWorld = (headWorld + tailWorld) / 2f;
+
+        transform.position = Vector3.MoveTowards(transform.position, targetWorld, moveSpeed * 2f * Time.deltaTime);
+
+        if (Vector3.Distance(transform.position, targetWorld) < 0.05f)
+        {
+            transform.position = targetWorld;
+            animator?.SetBool("IsWalking", false);
+            isEscaping = false;
+        }
+    }
 
     void UpdateAnimatorDirection(Vector3 dir)
     {
@@ -55,14 +98,15 @@ public class CowController : MonoBehaviour
         {
             animator.SetFloat("MoveX", dir.x > 0 ? 1 : -1);
             animator.SetFloat("MoveY", 0);
-            transform.localScale = new Vector3(2f, 1f, 1f); // 横向
+            transform.localScale = new Vector3(2f, 1f, 1f); // 横向拉伸
         }
         else
         {
             animator.SetFloat("MoveX", 0);
             animator.SetFloat("MoveY", dir.y > 0 ? 1 : -1);
-            transform.localScale = new Vector3(1f, 2f, 1f); // 纵向
+            transform.localScale = new Vector3(1f, 2f, 1f); // 纵向拉伸
         }
+
         Debug.Log($"方向: {dir}, MoveX: {animator.GetFloat("MoveX")}, MoveY: {animator.GetFloat("MoveY")}");
     }
 
