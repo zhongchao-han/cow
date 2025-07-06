@@ -69,8 +69,8 @@ def mirror_frames_by_index(img_path, out_path, frame_indices, rows=2, cols=2):
 
 temp = r"D:\Users\hanerlv\Downloads\temp.png"
 
-input = r"D:\Users\hanerlv\Downloads\ChatGPT Image 2025年7月2日 14_38_57.png"
-output = r"D:\Users\hanerlv\Downloads\grass.png"
+input = r"D:\Users\hanerlv\Downloads\ChatGPT Image 2025年7月3日 19_30_15.png"
+output = r"D:\Users\hanerlv\Downloads\cow2.png"
 
 # 示例用法
 remove_bg_color(input, 

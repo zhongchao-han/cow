@@ -23,6 +23,6 @@ def remove_bg_color(img_path, out_path, bg_color=(255,255,255), tolerance=10):
     print(f"已保存透明PNG到：{out_path}")
 
 # 示例用法
-remove_bg_color(r"D:\Users\hanerlv\Downloads\ChatGPT Image 2025年7月2日 14_38_57.png", 
-                r"D:\Users\hanerlv\Downloads\Grass.png", 
+remove_bg_color(r"D:\Users\hanerlv\Downloads\ChatGPT Image 2025年7月4日 18_33_40.png", 
+                r"D:\Users\hanerlv\Downloads\aaaaaaa.png", 
                 bg_color=(255,255,255), tolerance=10)

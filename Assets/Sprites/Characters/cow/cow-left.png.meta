@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 718d83269b94ff645bd04798f905dea8
+guid: 4f09eacd0ce2235499ddc2f4870193e2
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -34,7 +34,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 410
+  spritePixelsToUnits: 32
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -72,7 +72,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cow_0
+      name: cow-left_0
       rect:
         serializedVersion: 2
-        x: 60
-        y: 559
-        width: 427
-        height: 363
+        x: 0
+        y: 0
+        width: 32
+        height: 24
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,41 +124,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 65db2144ab8f4aa4dbd4169aafe38147
-      internalID: -376952977
+      spriteID: 2b93a597e4d973240885e740816b665c
+      internalID: -2000753284
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cow_1
-      rect:
-        serializedVersion: 2
-        x: 499
-        y: 561
-        width: 423
-        height: 369
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 991e8000a36bb1242825a43150dbdef1
-      internalID: 966599736
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cow_2
+      name: cow-left_1
       rect:
         serializedVersion: 2
         x: 64
-        y: 128
-        width: 421
-        height: 359
+        y: 0
+        width: 32
+        height: 24
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -166,20 +145,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 70e9a3b212a89ab40a831f895af94075
-      internalID: 609270607
+      spriteID: 5190d1fc862d6d34aa81945258cc91c3
+      internalID: 826495558
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cow_3
+      name: cow-left_2
       rect:
         serializedVersion: 2
-        x: 512
-        y: 128
-        width: 408
-        height: 359
+        x: 96
+        y: 0
+        width: 32
+        height: 24
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -187,8 +166,71 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 516a3872259f3dc44a4e9fb9af4966c0
-      internalID: 1232663453
+      spriteID: ab25bfe591f12104b8b14462a98b506d
+      internalID: -1206182770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cow-left_3
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 0
+        width: 32
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: affba987feda9ef4c8278a3d28a3de3f
+      internalID: 1029122867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cow-left_4
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 0
+        width: 32
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9569529c063ac8d429e08a0957cae04d
+      internalID: 102833250
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cow-left_5
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 32
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 96e1b34e4b20af14c8841bb27e47ec4f
+      internalID: 1574434826
       vertices: []
       indices: 
       edges: []
@@ -204,10 +246,12 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      cow_0: -376952977
-      cow_1: 966599736
-      cow_2: 609270607
-      cow_3: 1232663453
+      cow-left_0: -2000753284
+      cow-left_1: 826495558
+      cow-left_2: -1206182770
+      cow-left_3: 1029122867
+      cow-left_4: 102833250
+      cow-left_5: 1574434826
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
